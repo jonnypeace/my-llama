@@ -16,9 +16,9 @@ services:
               capabilities: [gpu]
     restart: unless-stopped
     command: >
-      ./llama.cpp/build/bin/llama-server --models-dir /models
+      ./llama.cpp/build/bin/llama-server
       --port 11111
       --host 0.0.0.0
-      --api-key 'very-secure-api-key'
+      --api-key 'my-api-key'
       --models-preset /config/config.ini
       --models-max 1

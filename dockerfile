@@ -19,4 +19,4 @@ RUN cmake --build llama.cpp/build --config Release -j6
 
 EXPOSE 11111
 
-CMD ["./llama.cpp/build/bin/llama-server", "--models-dir", "/models", "--port", "11111", "--host", "0.0.0.0"]
+CMD ["./llama.cpp/build/bin/llama-server", "--port", "11111", "--host", "0.0.0.0"]
