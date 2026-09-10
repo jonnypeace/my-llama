@@ -1,0 +1,27 @@
+services:
+  llamacpp:
+    build: .
+    container_name: llamacpp
+    #environment:
+    #  GGML_CUDA_DISABLE_GRAPHS: 1
+    #  GGML_CUDA_ENABLE_UNIFIED_MEMORY: 1
+    ports:
+      - "11111:11111"
+    volumes:
+      - ./models:/models
+      - ./config/:/config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    command: >
+      ./llama.cpp/build/bin/llama-server
+      --port 11111
+      --host 0.0.0.0
+      --api-key ''
+      --models-preset /config/config.ini
+      --models-max 1

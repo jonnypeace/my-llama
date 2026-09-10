@@ -1,0 +1,30 @@
+FROM nvidia/cuda:13.0.0-devel-ubuntu24.04 AS build
+
+RUN apt update && apt install -y  g++ freeglut3-dev \
+	build-essential libx11-dev libxmu-dev libxi-dev \
+	libglu1-mesa-dev libfreeimage-dev libglfw3-dev \
+	wget htop btop nvtop glances git \
+	pciutils build-essential cmake \
+	curl libcurl4-openssl-dev python3 python3-pip \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/TheTom/llama-cpp-turboquant.git
+RUN cd llama-cpp-turboquant && git checkout feature/turboquant-kv-cache
+
+RUN cp /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so.1 \
+    && test -e /usr/lib/x86_64-linux-gnu/libcuda.so.1
+
+RUN cmake llama-cpp-turboquant -B llama-cpp-turboquant/build -DGGML_CUDA=ON -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON -DCMAKE_CUDA_ARCHITECTURES=120
+
+RUN cmake --build llama-cpp-turboquant/build --config Release -j8 \
+  && rm /usr/lib/x86_64-linux-gnu/libcuda.so.1
+
+FROM nvidia/cuda:13.0.0-runtime-ubuntu24.04
+RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
+        libcurl4 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /llama-cpp-turboquant/build/bin/ /llama-cpp-turboquant/build/bin/
+
+EXPOSE 11113
+
+CMD ["./llama-cpp-turboquant/build/bin/llama-server", "--port", "11113", "--host", "0.0.0.0", "--api-key", ""]

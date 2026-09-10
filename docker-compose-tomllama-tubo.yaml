@@ -1,0 +1,24 @@
+services:
+  llamacpp:
+    build: .
+    container_name: tom-llamacpp
+    ports:
+      - "11113:11113"
+    volumes:
+      - /home/jonny/llamacpp/models:/models
+      - ./config/:/config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    command: >
+      ./llama-cpp-turboquant/build/bin/llama-server
+      --port 11113
+      --host 0.0.0.0
+      --api-key ''
+      --models-preset /config/config.ini
+      --models-max 1
